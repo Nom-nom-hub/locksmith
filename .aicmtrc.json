@@ -1,4 +1,4 @@
 {
-  "provider": "openrouter",
-  "model": "mistralai/mistral-7b-instruct:free"
+  "provider": "gemini",
+  "model": "gemini-1.5-flash-latest"
 }

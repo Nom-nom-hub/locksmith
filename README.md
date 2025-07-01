@@ -1,7 +1,7 @@
 # Locksmith
 
-[![NPM version](https://img.shields.io/npm/v/locksmith.svg)](https://npmjs.org/package/locksmith)
-[![Downloads](https://img.shields.io/npm/dm/locksmith.svg)](https://npmjs.org/package/locksmith)
+[![NPM version](https://img.shields.io/npm/v/locksmithx.svg)](https://npmjs.org/package/locksmithx)
+[![Downloads](https://img.shields.io/npm/dm/locksmithx.svg)](https://npmjs.org/package/locksmithx)
 
 A modern, robust, and cross-platform file locking utility for Node.js, written in JavaScript and released under the [MIT License](LICENSE). Locksmith provides safe, reliable, and advisory file locking for inter-process and inter-machine coordination.
 
@@ -57,7 +57,7 @@ Locksmith stands out for its reliability, modern API, and robust handling of edg
 ## Installation
 
 ```sh
-npm install locksmith
+npm install locksmithx
 ```
 
 ---
@@ -65,7 +65,7 @@ npm install locksmith
 ## Quick Start
 
 ```js
-const locksmith = require('locksmith');
+const locksmith = require('locksmithx');
 
 (async () => {
   // Acquire a lock on a file
