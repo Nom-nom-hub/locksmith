@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>locksmithx – Professional File Locking for Node.js</title>
+  <meta name="description" content="locksmithx: A modern, robust, and cross-platform file locking utility for Node.js.">
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      margin: 0;
+      background: #f7fafd;
+      color: #222;
+    }
+    header {
+      background: linear-gradient(90deg, #2563eb 0%, #1e293b 100%);
+      color: #fff;
+      padding: 2.5rem 1rem 2rem 1rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.8rem;
+      margin: 0 0 0.5rem 0;
+      font-weight: 600;
+      letter-spacing: -1px;
+    }
+    header p {
+      font-size: 1.25rem;
+      margin: 0 0 1.5rem 0;
+      color: #dbeafe;
+    }
+    .buttons {
+      margin: 1.5rem 0 0 0;
+    }
+    .buttons a {
+      display: inline-block;
+      margin: 0 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: #fff;
+      color: #2563eb;
+      border-radius: 6px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+      transition: background 0.2s, color 0.2s;
+    }
+    .buttons a:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+    main {
+      max-width: 900px;
+      margin: 2.5rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(30,41,59,0.07);
+      padding: 2.5rem 1.5rem;
+    }
+    section {
+      margin-bottom: 2.5rem;
+    }
+    h2 {
+      color: #2563eb;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    ul.features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1.5rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    ul.features li {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 1.25rem 1rem;
+      flex: 1 1 250px;
+      min-width: 220px;
+      font-size: 1.08rem;
+      box-shadow: 0 1px 4px rgba(30,41,59,0.04);
+    }
+    pre, code {
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      overflow-x: auto;
+      color: #1e293b;
+      margin: 0 0 1rem 0;
+      display: block;
+    }
+    @media (max-width: 700px) {
+      main {
+        padding: 1.2rem 0.5rem;
+      }
+      ul.features {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>locksmithx</h1>
+    <p>The professional, cross-platform file locking utility for Node.js</p>
+    <div class="buttons">
+      <a href="https://github.com/blazeinstall/LockSmith" target="_blank">GitHub</a>
+      <a href="https://www.npmjs.com/package/locksmithx" target="_blank">npm</a>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>Features</h2>
+      <ul class="features">
+        <li>Cross-platform: Windows, Linux, macOS, and network filesystems</li>
+        <li>Atomic, reliable file locking using <code>mkdir</code> strategy</li>
+        <li>Staleness detection &amp; automatic lock refreshing</li>
+        <li>Async &amp; sync APIs for maximum flexibility</li>
+        <li>Customizable retry, staleness, and update intervals</li>
+        <li>Handles process crashes and cleans up locks on exit</li>
+        <li>Lightweight, zero dependencies for core functionality</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Installation</h2>
+      <pre>npm install locksmithx</pre>
+    </section>
+    <section>
+      <h2>Quick Start</h2>
+      <pre><code>const locksmith = require('locksmithx');
+
+(async () =&gt; {
+  const release = await locksmith.lock('some/file');
+  try {
+    // Do something while the file is locked
+  } finally {
+    await release();
+  }
+})();
+</code></pre>
+    </section>
+    <section>
+      <h2>Why locksmithx?</h2>
+      <p>locksmithx is designed for modern Node.js applications that need robust, reliable, and cross-platform file locking. It is ideal for distributed systems, build tools, and any scenario where safe file access is critical.</p>
+    </section>
+    <section>
+      <h2>Documentation</h2>
+      <p>See the <a href="../README.md" target="_blank">README</a> for full API documentation, advanced usage, and best practices.</p>
+    </section>
+  </main>
+</body>
+</html> 
