@@ -1,72 +1,37 @@
 {
-  "name": "locksmithx",
-  "version": "4.1.2",
-  "description": "A modern, robust, and cross-platform file locking utility for Node.js. Formerly known as proper-lockfile.",
-  "keywords": [
-    "lock",
-    "locking",
-    "file",
-    "lockfile",
-    "fs",
-    "cross-process"
-  ],
-  "author": "André Cruz <andre@moxy.studio>",
-  "homepage": "https://github.com/moxystudio/locksmith",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:moxystudio/locksmith.git"
+  "name": "aicmt",
+  "version": "1.0.5",
+  "description": "AI-powered Git commit message generator supporting OpenAI, Ollama, and Gemini.",
+  "main": "bin/index.js",
+  "bin": {
+    "aicmt": "bin/index.js"
   },
-  "license": "MIT",
-  "main": "index.js",
-  "files": [
-    "lib"
-  ],
   "scripts": {
-    "lint": "eslint .",
-    "test": "jest --env node --coverage --runInBand",
-    "prerelease": "npm t && npm run lint",
-    "release": "standard-version",
-    "postrelease": "git push --follow-tags origin HEAD && npm publish"
+    "start": "node bin/index.js",
+    "install-hook": "node scripts/install-hook.js"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "git add"
-    ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
+  "keywords": [
+    "git",
+    "commit",
+    "ai",
+    "cli",
+    "openai",
+    "ollama",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
-    "aicmt": "^1.0.4",
-    "graceful-fs": "^4.2.4",
-    "retry": "^0.12.0",
-    "signal-exit": "^3.0.2"
+    "aicmt": "^1.0.0-beta.4",
+    "axios": "^1.6.8",
+    "blaze-install": "^1.10.7",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.4.5",
+    "inquirer": "^8.2.6",
+    "openai": "^4.30.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.0.0",
-    "@commitlint/config-conventional": "^7.0.1",
-    "@segment/clear-timeouts": "^2.0.0",
-    "delay": "^4.1.0",
-    "eslint": "^5.3.0",
-    "eslint-config-moxy": "^7.1.0",
-    "execa": "^1.0.0",
-    "husky": "^1.1.4",
-    "jest": "^24.5.0",
-    "lint-staged": "^8.0.4",
-    "mkdirp": "^0.5.1",
-    "p-defer": "^2.1.0",
-    "rimraf": "^2.6.2",
-    "stable": "^0.1.8",
-    "standard-version": "^5.0.0",
-    "thread-sleep": "^2.1.0"
+    "jest": "^29.7.0"
   }
 }

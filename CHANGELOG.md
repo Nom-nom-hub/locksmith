@@ -106,3 +106,19 @@ All notable changes to this project will be documented in this file. See [standa
 * remove callback support
 * use of node lts language features such as object spread
 * compromised function in lock() has been moved to an option
+
+## 1.0.5
+
+### feat
+- Add .npmignore for non-essential files, include .env, .gitignore
+
+### refactor
+- ignore .aicmtrc.json file in .gitignore and .npmignore
+- updated LLM provider and package name in .aicmtrc.json, README.md, and package.json
+
+### chore
+- bump aicmt version to 1.0.4 in package-lock.json and package.json
+
+### other
+- fea(aicmtrc): initialize config and api keys in env file
+- Initial commit
