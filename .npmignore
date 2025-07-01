@@ -20,3 +20,4 @@ package-lock.json
 
 # Exclude any other non-essential files 
 .env
+.aicmtrc.json

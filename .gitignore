@@ -4,3 +4,4 @@ coverage/
 test/tmp/
 test/*.log
 .env
+.aicmtrc.json
