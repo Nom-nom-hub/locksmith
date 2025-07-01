@@ -1,0 +1,4 @@
+{
+  "provider": "openrouter",
+  "model": "mistralai/mistral-7b-instruct:free"
+}
