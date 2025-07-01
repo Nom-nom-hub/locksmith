@@ -1,0 +1,22 @@
+# Exclude test files and directories
+/test/
+
+# Exclude coverage reports
+/coverage/
+
+# Exclude config and dotfiles
+.aicmtrc.json
+.eslintrc.json
+.eslintignore
+.editorconfig
+.travis.yml
+.gitignore
+
+# Exclude local lock and log files
+*.log
+
+# Exclude package manager lock file (optional, if not needed)
+package-lock.json
+
+# Exclude any other non-essential files 
+.env
