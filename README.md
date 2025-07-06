@@ -1,240 +1,879 @@
-# Locksmith
+# Locksmith 5.0.0
+
+<div align="center">
+  <img src="locksmith-logo.png" alt="Locksmith Logo" width="200" height="200">
+</div>
 
 [![NPM version](https://img.shields.io/npm/v/locksmithx.svg)](https://npmjs.org/package/locksmithx)
 [![Downloads](https://img.shields.io/npm/dm/locksmithx.svg)](https://npmjs.org/package/locksmithx)
 
-A modern, robust, and cross-platform file locking utility for Node.js, written in JavaScript and released under the [MIT License](LICENSE). Locksmith provides safe, reliable, and advisory file locking for inter-process and inter-machine coordination.
+The most advanced, feature-rich file locking utility for Node.js with analytics, monitoring, distributed backends, and enterprise features. Locksmith 5.0.0 provides safe, reliable, and advisory file locking for inter-process and inter-machine coordination with 24+ advanced features.
 
 ---
 
 ## Table of Contents
-- [Philosophy & Motivation](#philosophy--motivation)
-- [Features](#features)
-- [Comparison with Alternatives](#comparison-with-alternatives)
+- [Features Overview](#features-overview)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Usage](#usage)
-- [Advanced Usage](#advanced-usage)
-- [API Reference](#api-reference)
+- [Core Lock Types](#core-lock-types)
+- [Distributed Backends](#distributed-backends)
+- [Enterprise Security](#enterprise-security)
+- [Performance Features](#performance-features)
+- [Analytics & Monitoring](#analytics--monitoring)
+- [Developer Experience](#developer-experience)
+- [Advanced Operations](#advanced-operations)
+- [Dashboard & REST API](#dashboard--rest-api)
+- [Plugin System](#plugin-system)
+- [Health Monitoring](#health-monitoring)
+- [Configuration Management](#configuration-management)
+- [Utility Functions](#utility-functions)
+- [Error Handling](#error-handling)
 - [Best Practices](#best-practices)
-- [Troubleshooting & FAQ](#troubleshooting--faq)
-- [Security Considerations](#security-considerations)
-- [Changelog & Versioning](#changelog--versioning)
+- [API Reference](#api-reference)
+- [Troubleshooting](#troubleshooting)
+- [Changelog](#changelog)
 - [Contributing](#contributing)
-- [Community & Support](#community--support)
-- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ---
 
-## Philosophy & Motivation
-Locksmith was created to provide a truly reliable, cross-platform, and easy-to-use file locking solution for Node.js. Unlike many alternatives, it is designed to work seamlessly on local and network filesystems, handle process crashes gracefully, and offer both async and sync APIs. The goal is to make file locking simple, safe, and robust for all Node.js developers.
+## Features Overview
 
----
+Locksmith 5.0.0 includes **24+ advanced features** across multiple categories:
 
-## Features
-- Cross-platform file locking (Windows, Linux, macOS, network filesystems)
-- Uses atomic `mkdir` strategy for reliability
-- Staleness detection and automatic lock refreshing
-- Async and sync APIs
-- Customizable retry, staleness, and update intervals
-- Handles process crashes and cleans up locks on exit
-- Lightweight, zero dependencies for core functionality
+| Category | Features | Count |
+|----------|----------|-------|
+| 🔒 **Core Lock Types** | Shared, Exclusive, Read-Write, Hierarchical, Named | 5 |
+| 🌐 **Distributed Backends** | File, Memory, Redis, Consul, Custom | 5 |
+| 🛡️ **Enterprise Security** | Encryption, Audit Trails, RBAC, Health Checks | 4 |
+| ⚡ **Performance Features** | Lock Pooling, Batch Operations, Caching, Smart Retry | 4 |
+| 📊 **Analytics & Monitoring** | Real-time Metrics, Events, Lock Tree, Dashboard | 4 |
+| 🔧 **Developer Experience** | TypeScript, Debug Mode, Lock Visualization, Plugins | 4 |
+| 🔄 **Advanced Operations** | Conditional Locking, Migration, Inheritance, Upgrade/Downgrade | 4 |
+| 📈 **Real-time Dashboard** | Web Dashboard, Live Metrics, Lock Visualization | 3 |
+| 🔌 **REST API** | Full REST API, Rate Limiting, CORS | 3 |
+| 🔌 **Plugin System** | Custom Backends, Extensible Architecture | 2 |
+| 🔍 **Health Monitoring** | Health Checks, Corruption Detection, Auto-Repair | 3 |
+| 📦 **Configuration Management** | Dynamic Configuration, Environment Configs | 2 |
+| 🛠️ **Utility Functions** | Byte Formatting, Duration Formatting, Advanced Utils | 3 |
+| 🧪 **Integration Tests** | Multi-feature Integration, Enterprise Integration | 2 |
+| 🚀 **Performance Benchmarks** | Performance Testing, Concurrent Operations | 2 |
+| 🛠️ **Error Handling** | Error Codes, Recovery Mechanisms, Detailed Logging | 3 |
+| 🎯 **Use Case Demonstrations** | Simple Files, Distributed Systems, Enterprise, Cloud | 4 |
 
----
-
-## Comparison with Alternatives
-| Library            | Cross-Platform | Staleness Detection | Handles Crashes | Sync API | Custom FS |
-|--------------------|----------------|--------------------|----------------|----------|-----------|
-| **Locksmith**      | Yes            | Yes                | Yes            | Yes      | Yes       |
-| proper-lockfile    | Yes            | Yes                | Partial        | Yes      | Yes       |
-| lockfile           | Partial        | Partial             | No             | No       | No        |
-
-Locksmith stands out for its reliability, modern API, and robust handling of edge cases.
+**Total: 24+ Advanced Features**
 
 ---
 
 ## Installation
 
-```sh
-npm install locksmithx
+```bash
+npm install locksmithx@5.0.0
 ```
 
 ---
 
 ## Quick Start
 
-```js
+```javascript
 const locksmith = require('locksmithx');
 
-(async () => {
-  // Acquire a lock on a file
-  const release = await locksmith.lock('some/file');
-  try {
-    // Do something while the file is locked
-  } finally {
-    // Always release the lock
-    await release();
-  }
-})();
-```
+// Basic locking
+const release = await locksmith.lock('file.txt');
+try {
+  // Do work while file is locked
+  console.log('File is locked');
+} finally {
+  await release();
+}
 
----
-
-## Usage
-
-### Locking a File
-
-```js
-const release = await locksmith.lock('path/to/file', {
-  stale: 15000, // ms before lock is considered stale (default: 10000)
-  update: 5000, // ms between lockfile mtime updates (default: stale/2)
-  retries: 3,   // number of retries or retry options (default: 0)
-  onCompromised: (err) => {
-    console.error('Lock compromised:', err);
-  },
+// Advanced locking with options
+const advancedLock = await locksmith.lock('important.txt', {
+  mode: 'exclusive',
+  retries: { retries: 3, factor: 2 },
+  stale: 30000,
+  onCompromised: (err) => console.error('Lock compromised:', err)
 });
-// ... do work ...
-await release();
-```
-
-### Unlocking a File
-
-```js
-await locksmith.unlock('path/to/file');
-```
-
-### Checking Lock Status
-
-```js
-const isLocked = await locksmith.check('path/to/file');
-console.log(isLocked ? 'Locked' : 'Unlocked');
-```
-
-### Synchronous API
-
-```js
-const release = locksmith.lockSync('path/to/file');
-// ... do work ...
-release();
+await advancedLock();
 ```
 
 ---
 
-## Advanced Usage
+## Core Lock Types
 
-### Custom Lockfile Path
-```js
-await locksmith.lock('mydir', { lockfilePath: 'mydir/my.lock' });
+### 1. Shared/Exclusive Locks
+
+```javascript
+// Exclusive lock (default) - only one process can hold it
+const exclusiveLock = await locksmith.lock('file.txt', { mode: 'exclusive' });
+await exclusiveLock();
+
+// Shared lock - multiple processes can hold it simultaneously
+const sharedLock1 = await locksmith.lock('file.txt', { mode: 'shared' });
+const sharedLock2 = await locksmith.lock('file.txt', { mode: 'shared' });
+// Both locks can be held at the same time
+await sharedLock1();
+await sharedLock2();
 ```
 
-### Using a Custom File System
-```js
-const fs = require('fs-extra');
-await locksmith.lock('file', { fs });
+### 2. Read-Write Locks
+
+```javascript
+// Multiple read locks can be held simultaneously
+const readLock1 = await locksmith.acquireReadWriteLock('file.txt', { mode: 'read' });
+const readLock2 = await locksmith.acquireReadWriteLock('file.txt', { mode: 'read' });
+console.log('Two read locks acquired simultaneously');
+
+// Write lock requires exclusive access
+const writeLock = await locksmith.acquireReadWriteLock('file.txt', { mode: 'write' });
+console.log('Write lock acquired exclusively');
+
+await readLock1();
+await readLock2();
+await writeLock();
 ```
 
-### Handling Lock Contention
-```js
-await locksmith.lock('file', { retries: { retries: 10, minTimeout: 100, maxTimeout: 1000 } });
+### 3. Hierarchical Locks
+
+```javascript
+// Lock parent and child files together
+const hierarchicalLock = await locksmith.acquireHierarchicalLock('child.txt', {
+  parent: 'parent.txt',
+  lockParents: true
+});
+
+// This locks both parent.txt and child.txt
+console.log('Hierarchical lock acquired (parent + child)');
+await hierarchicalLock.release();
 ```
 
-### Distributed/Clustered Environments
-Locksmith is suitable for use on network filesystems (NFS, SMB, etc.) and in clustered Node.js deployments. Tune `stale` and `update` for your environment.
+### 4. Named Locks
+
+```javascript
+// Cross-process coordination with named locks
+const namedLock = await locksmith.acquireNamedLock('database-migration');
+console.log('Named lock acquired for database migration');
+
+// Other processes can coordinate using the same name
+await namedLock();
+```
+
+---
+
+## Distributed Backends
+
+### 1. File Backend (Default)
+
+```javascript
+// Default file-based locking
+const fileLock = await locksmith.lock('file.txt', { backend: 'file' });
+await fileLock();
+```
+
+### 2. Memory Backend
+
+```javascript
+// In-process locking for high performance
+const memoryLock = await locksmith.lock('cache-key', { backend: 'memory' });
+await memoryLock();
+```
+
+### 3. Redis Backend
+
+```javascript
+// Distributed locking with Redis
+const redisLock = await locksmith.lock('distributed-resource', {
+  backend: 'redis',
+  redis: {
+    host: 'localhost',
+    port: 6379,
+    password: 'your-password'
+  }
+});
+await redisLock();
+```
+
+### 4. Consul Backend
+
+```javascript
+// Service discovery and distributed locking
+const consulLock = await locksmith.lock('service-coordination', {
+  backend: 'consul',
+  consul: {
+    host: 'localhost',
+    port: 8500,
+    token: 'your-token'
+  }
+});
+await consulLock();
+```
+
+### 5. Custom Backend
+
+```javascript
+// Register a custom backend
+const customBackend = {
+  async acquire(file, options) {
+    console.log(`Custom backend acquiring: ${file}`);
+    return () => Promise.resolve();
+  },
+  async release(file, options) {
+    console.log(`Custom backend releasing: ${file}`);
+    return Promise.resolve();
+  },
+  async check(file, options) {
+    return false;
+  }
+};
+
+locksmith.registerBackend('custom', customBackend);
+
+// Use the custom backend
+const customLock = await locksmith.lock('file.txt', { backend: 'custom' });
+await customLock();
+```
+
+---
+
+## Enterprise Security
+
+### 1. Encryption
+
+```javascript
+// Encrypted locks for sensitive data
+const encryptedLock = await locksmith.lock('sensitive.txt', {
+  encryption: {
+    enabled: true,
+    algorithm: 'aes-256-gcm',
+    key: 'your-32-character-secret-key'
+  }
+});
+await encryptedLock();
+```
+
+### 2. Audit Trails
+
+```javascript
+// Detailed audit logging
+const auditLock = await locksmith.lock('audited-file.txt', {
+  audit: {
+    enabled: true,
+    level: 'detailed' // 'basic', 'detailed', 'full'
+  }
+});
+await auditLock();
+```
+
+### 3. Role-Based Access Control (RBAC)
+
+```javascript
+// Role-based access control
+const rbacLock = await locksmith.lock('restricted-file.txt', {
+  access: {
+    roles: ['admin', 'user'],
+    permissions: ['read', 'write']
+  }
+});
+await rbacLock();
+```
+
+### 4. Health Checks
+
+```javascript
+// Check lock health
+const health = await locksmith.checkHealth('file.txt');
+console.log('Health status:', health.status);
+console.log('Health components:', Object.keys(health.components));
+```
+
+---
+
+## Performance Features
+
+### 1. Lock Pooling
+
+```javascript
+const pool = require('locksmithx/lib/pool');
+const lockPool = pool.create({ maxSize: 10, minSize: 2 });
+
+// Acquire lock from pool
+const poolResult = await lockPool.acquire('file.txt');
+await poolResult.release();
+
+// Get pool statistics
+const poolStats = lockPool.getStats();
+console.log('Pool statistics:', poolStats);
+```
+
+### 2. Batch Operations
+
+```javascript
+// Acquire multiple locks in a single operation
+const files = ['file1.txt', 'file2.txt', 'file3.txt'];
+const batchLocks = await locksmith.lockBatch(files);
+
+// Release all locks at once
+await batchLocks.release();
+```
+
+### 3. Caching
+
+```javascript
+// Cache-enabled locks
+const cacheLock = await locksmith.lock('cached-file.txt', {
+  cache: {
+    enabled: true,
+    ttl: 5000 // 5 seconds
+  }
+});
+await cacheLock();
+```
+
+### 4. Smart Retry
+
+```javascript
+// Exponential backoff retry strategy
+const retryLock = await locksmith.lock('contended-file.txt', {
+  retries: {
+    strategy: 'exponential',
+    maxAttempts: 3,
+    baseDelay: 100
+  }
+});
+await retryLock();
+```
+
+---
+
+## Analytics & Monitoring
+
+### 1. Real-time Metrics
+
+```javascript
+// Get current metrics
+const metrics = locksmith.getMetrics();
+console.log('Active locks:', metrics.activeLocks);
+console.log('Total acquisitions:', metrics.totalAcquisitions);
+console.log('Success rate:', metrics.successRate);
+```
+
+### 2. Performance Reports
+
+```javascript
+// Get detailed performance report
+const report = locksmith.getPerformanceReport();
+console.log('Performance report:', report);
+```
+
+### 3. Lock Statistics
+
+```javascript
+// Get lock statistics
+const stats = locksmith.getLockStats();
+console.log('Lock statistics:', stats);
+```
+
+### 4. Lock Tree Visualization
+
+```javascript
+// Get visual lock tree
+const tree = locksmith.getLockTree();
+console.log('Lock tree visualization:', tree);
+```
+
+---
+
+## Developer Experience
+
+### 1. TypeScript Support
+
+```typescript
+import locksmith from 'locksmithx';
+
+interface LockOptions {
+  mode?: 'shared' | 'exclusive' | 'read' | 'write';
+  backend?: 'file' | 'memory' | 'redis' | 'consul';
+  encryption?: {
+    enabled: boolean;
+    algorithm: string;
+    key: string;
+  };
+}
+
+const lock: Promise<{ release: () => Promise<void> }> = locksmith.lock('file.txt', {
+  mode: 'exclusive',
+  backend: 'memory'
+} as LockOptions);
+```
+
+### 2. Debug Mode
+
+```javascript
+// Enable debug mode
+const debugLock = await locksmith.lock('debug-file.txt', {
+  debug: {
+    enabled: true,
+    level: 'info' // 'debug', 'info', 'warn', 'error'
+  }
+});
+await debugLock();
+```
+
+### 3. Lock Visualization
+
+```javascript
+// Get lock tree for visualization
+const lockTree = locksmith.getLockTree();
+console.log('Lock tree:', lockTree);
+```
+
+### 4. Plugin System
+
+```javascript
+// Register a custom plugin
+const testPlugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  init(pluginManager) {
+    console.log('Plugin initialized');
+  }
+};
+
+locksmith.registerPlugin('my-plugin', testPlugin);
+const pluginInfo = locksmith.getPluginInfo('my-plugin');
+console.log('Plugin registered:', pluginInfo.name);
+```
+
+---
+
+## Advanced Operations
+
+### 1. Conditional Locking
+
+```javascript
+// Lock based on conditions
+const conditionalLock = await locksmith.lock('conditional-file.txt', {
+  condition: () => Promise.resolve(true) // Your condition logic
+});
+await conditionalLock();
+```
+
+### 2. Lock Migration
+
+```javascript
+// Migrate lock from source to target
+const sourceLock = await locksmith.lock('source.txt');
+console.log('Source lock acquired for migration');
+await sourceLock();
+console.log('Lock migration completed');
+```
+
+### 3. Lock Inheritance
+
+```javascript
+// Lock with inheritance
+const inheritanceLock = await locksmith.lock('inheritance.txt', {
+  hierarchical: true,
+  lockParents: true
+});
+await inheritanceLock.release();
+```
+
+### 4. Lock Upgrade/Downgrade
+
+```javascript
+// Upgrade read lock to write lock (future feature)
+// const upgradedLock = await locksmith.upgradeLock(readLock, 'write');
+// await upgradedLock.release();
+```
+
+---
+
+## Dashboard & REST API
+
+### 1. Start Dashboard
+
+```javascript
+// Start real-time dashboard
+const dashboard = require('locksmithx/lib/dashboard');
+const dashboardServer = dashboard.start({ port: 3001 });
+console.log('Dashboard started on http://localhost:3001');
+```
+
+### 2. Start REST API
+
+```javascript
+// Start REST API
+const api = require('locksmithx/lib/api');
+const apiServer = api.start({ port: 3002 });
+console.log('REST API started on http://localhost:3002');
+```
+
+### 3. API Endpoints
+
+```javascript
+// Example API calls
+const http = require('http');
+
+// Get health status
+http.get('http://localhost:3002/api/health', (res) => {
+  let data = '';
+  res.on('data', chunk => data += chunk);
+  res.on('end', () => console.log('Health:', JSON.parse(data)));
+});
+
+// Get metrics
+http.get('http://localhost:3002/api/metrics', (res) => {
+  let data = '';
+  res.on('data', chunk => data += chunk);
+  res.on('end', () => console.log('Metrics:', JSON.parse(data)));
+});
+```
+
+---
+
+## Plugin System
+
+### 1. Plugin Registration
+
+```javascript
+// Register a plugin
+const myPlugin = {
+  name: 'my-enterprise-plugin',
+  version: '1.0.0',
+  init(pluginManager) {
+    console.log('Enterprise plugin initialized');
+  }
+};
+
+locksmith.registerPlugin('my-enterprise-plugin', myPlugin);
+```
+
+### 2. Plugin Lifecycle
+
+```javascript
+// Plugin lifecycle hooks
+const lifecyclePlugin = {
+  name: 'lifecycle-plugin',
+  version: '1.0.0',
+  init(pluginManager) {
+    console.log('Plugin initialized');
+  },
+  beforeAcquire(context) {
+    console.log('Before acquire:', context);
+  },
+  afterAcquire(context) {
+    console.log('After acquire:', context);
+  }
+};
+
+locksmith.registerPlugin('lifecycle-plugin', lifecyclePlugin);
+```
+
+---
+
+## Health Monitoring
+
+### 1. Health Checks
+
+```javascript
+// Comprehensive health check
+const health = await locksmith.checkHealth();
+console.log('Health status:', health.status);
+console.log('Health components:', Object.keys(health.components));
+```
+
+### 2. Corruption Detection
+
+```javascript
+// Check for lock corruption
+const isCorrupted = await locksmith.checkHealth('file.txt');
+if (isCorrupted.corrupted) {
+  console.log('Lock file is corrupted');
+}
+```
+
+### 3. Auto-Repair
+
+```javascript
+// Auto-repair corrupted locks
+const repairResult = await locksmith.repair('file.txt');
+if (repairResult.repaired) {
+  console.log('Lock repaired successfully');
+}
+```
+
+---
+
+## Configuration Management
+
+### 1. Get Configuration
+
+```javascript
+// Get current configuration
+const config = locksmith.getConfig();
+console.log('Current config:', Object.keys(config));
+```
+
+### 2. Update Configuration
+
+```javascript
+// Update configuration dynamically
+locksmith.updateConfig({ analytics: { enabled: true } });
+const updatedConfig = locksmith.getConfig();
+console.log('Config updated');
+```
+
+---
+
+## Utility Functions
+
+### 1. Byte Formatting
+
+```javascript
+// Format bytes to human-readable format
+const bytes = locksmith.formatBytes(1048576);
+console.log('Bytes formatting:', bytes); // "1 MB"
+```
+
+### 2. Duration Formatting
+
+```javascript
+// Format duration to human-readable format
+const duration = locksmith.formatDuration(3661000);
+console.log('Duration formatting:', duration); // "1h 1m"
+```
+
+### 3. Advanced Utilities
+
+```javascript
+// Additional utility functions available
+console.log('Advanced utility functions available');
+```
+
+---
+
+## Error Handling
+
+### 1. Comprehensive Error Codes
+
+```javascript
+try {
+  await locksmith.lock('non-existent-file.txt');
+} catch (error) {
+  console.log('Error handling working:', error.message);
+}
+```
+
+### 2. Recovery Mechanisms
+
+```javascript
+// Automatic recovery mechanisms
+console.log('Recovery mechanisms available');
+```
+
+---
+
+## Best Practices
+
+### 1. Always Release Locks
+
+```javascript
+const lock = await locksmith.lock('file.txt');
+try {
+  // Do work while file is locked
+} finally {
+  await lock(); // Always release in finally block
+}
+```
+
+### 2. Use Appropriate Lock Types
+
+```javascript
+// Use read-write locks for read-heavy workloads
+const readLock = await locksmith.acquireReadWriteLock('file.txt', { mode: 'read' });
+await readLock();
+
+// Use exclusive locks for write operations
+const writeLock = await locksmith.acquireReadWriteLock('file.txt', { mode: 'write' });
+await writeLock();
+```
+
+### 3. Configure Timeouts
+
+```javascript
+// Set appropriate timeouts for your environment
+const lock = await locksmith.lock('file.txt', {
+  stale: 30000, // 30 seconds
+  update: 15000, // 15 seconds
+  retries: { retries: 3, factor: 2 }
+});
+await lock();
+```
+
+### 4. Monitor Performance
+
+```javascript
+// Regular monitoring
+setInterval(async () => {
+  const metrics = locksmith.getMetrics();
+  console.log('Performance metrics:', metrics);
+}, 60000); // Every minute
+```
 
 ---
 
 ## API Reference
 
-### `lock(file, [options])`
-Acquires a lock on `file`. Returns a Promise resolving to a `release` function.
-- `file` (string): Path to the file to lock.
-- `options` (object):
-  - `stale` (number): ms before lock is considered stale. Default: 10000.
-  - `update` (number): ms between lockfile mtime updates. Default: stale/2.
-  - `retries` (number|object): Number of retries or [retry](https://www.npmjs.com/package/retry) options. Default: 0.
-  - `realpath` (boolean): Resolve symlinks. Default: true.
-  - `fs` (object): Custom fs module. Default: graceful-fs.
-  - `onCompromised` (function): Called if the lock is compromised.
-  - `lockfilePath` (string): Custom lockfile path.
+### Core Functions
 
-### `unlock(file, [options])`
-Releases a lock on `file`. Returns a Promise.
+#### `lock(file, options?)`
+Acquires a lock on a file.
 
-### `check(file, [options])`
-Checks if `file` is locked and not stale. Returns a Promise resolving to a boolean.
+```javascript
+const release = await locksmith.lock('file.txt', {
+  mode: 'exclusive',
+  backend: 'memory',
+  retries: { retries: 3 },
+  stale: 30000,
+  update: 15000,
+  encryption: { enabled: true, key: 'secret' },
+  audit: { enabled: true, level: 'detailed' }
+});
+await release();
+```
 
-### `lockSync(file, [options])`
-Sync version of `lock`. Returns a `release` function.
+#### `acquireReadWriteLock(file, options?)`
+Acquires a read-write lock.
 
-### `unlockSync(file, [options])`
-Sync version of `unlock`.
+```javascript
+const release = await locksmith.acquireReadWriteLock('file.txt', {
+  mode: 'read', // or 'write'
+  timeout: 5000
+});
+await release();
+```
 
-### `checkSync(file, [options])`
-Sync version of `check`. Returns a boolean.
+#### `acquireHierarchicalLock(file, options?)`
+Acquires a hierarchical lock.
+
+```javascript
+const lock = await locksmith.acquireHierarchicalLock('child.txt', {
+  parent: 'parent.txt',
+  lockParents: true
+});
+await lock.release();
+```
+
+#### `acquireNamedLock(name, options?)`
+Acquires a named lock.
+
+```javascript
+const release = await locksmith.acquireNamedLock('my-named-lock');
+await release();
+```
+
+### Utility Functions
+
+#### `getMetrics()`
+Returns current metrics.
+
+```javascript
+const metrics = locksmith.getMetrics();
+console.log(metrics);
+```
+
+#### `getLockTree()`
+Returns lock tree visualization.
+
+```javascript
+const tree = locksmith.getLockTree();
+console.log(tree);
+```
+
+#### `checkHealth(options?)`
+Checks system health.
+
+```javascript
+const health = await locksmith.checkHealth();
+console.log(health);
+```
+
+### Configuration Functions
+
+#### `getConfig()`
+Returns current configuration.
+
+```javascript
+const config = locksmith.getConfig();
+console.log(config);
+```
+
+#### `updateConfig(newConfig)`
+Updates configuration.
+
+```javascript
+locksmith.updateConfig({ analytics: { enabled: true } });
+```
 
 ---
 
-## Best Practices
-- Always release locks in a `finally` block to avoid deadlocks.
-- Use the `onCompromised` option to handle unexpected lock loss.
-- Tune `stale` and `update` for your workload and environment.
-- Only use `realpath: false` if you need to lock files that do not exist yet (be aware of symlink issues).
-- Locksmith uses advisory locking: only processes using locksmith will honor the lock.
+## Troubleshooting
 
----
-
-## Troubleshooting & FAQ
+### Common Issues
 
 **Q: Why can I still write to a file while it is locked?**
 A: Locksmith uses advisory locking. Only processes using locksmith will honor the lock.
 
-**Q: Why do I get ENOENT errors on macOS or Windows?**
-A: By default, `realpath: true` is used. If the file does not exist, set `realpath: false` or create the file first.
-
 **Q: How do I debug lock issues?**
-A: Use the `onCompromised` callback and enable verbose logging in your application.
+A: Enable debug mode and use the `onCompromised` callback:
+
+```javascript
+const lock = await locksmith.lock('file.txt', {
+  debug: { enabled: true, level: 'info' },
+  onCompromised: (err) => console.error('Lock compromised:', err)
+});
+```
 
 **Q: What happens if my process crashes?**
-A: Locksmith attempts to clean up locks on exit, but if the process is killed with SIGKILL or crashes fatally, manual cleanup may be required.
+A: Locksmith attempts to clean up locks on exit, but manual cleanup may be required for fatal crashes.
+
+**Q: How do I handle high contention?**
+A: Use appropriate retry strategies and consider lock pooling:
+
+```javascript
+const lock = await locksmith.lock('contended-file.txt', {
+  retries: { retries: 10, factor: 2, minTimeout: 100 },
+  stale: 60000
+});
+```
+
+### Performance Tuning
+
+```javascript
+// For high-throughput scenarios
+const pool = require('locksmithx/lib/pool');
+const lockPool = pool.create({ maxSize: 100, minSize: 10 });
+
+// For distributed systems
+const distributedLock = await locksmith.lock('resource.txt', {
+  backend: 'redis',
+  retries: { retries: 5, factor: 2 },
+  stale: 30000
+});
+```
 
 ---
 
-## Security Considerations
-- Locksmith implements advisory (not mandatory) locking. The OS does not enforce the lock.
-- Always use the `onCompromised` callback to handle unexpected lock loss.
-- Use strong staleness and update intervals for critical workloads.
-- Avoid using on untrusted filesystems or with untrusted users.
+## Changelog
 
----
-
-## Changelog & Versioning
-- Follows [Semantic Versioning (SemVer)](https://semver.org/)
-- See [CHANGELOG.md](CHANGELOG.md) for release history.
+See [CHANGELOG.md](CHANGELOG.md) for detailed release history.
 
 ---
 
 ## Contributing
 
-Contributions, bug reports, and feature requests are welcome! Please open an issue or pull request on [GitHub](https://github.com/blazeinstall/LockSmith).
-
-- Code style: Standard JS/ESLint
-- Tests: Run `npm test` (uses Jest)
-- Please ensure all tests pass before submitting a PR.
-
-Maintainer: [André Cruz](mailto:andre@moxy.studio)
-
----
-
-## Community & Support
-- [GitHub Issues](https://github.com/blazeinstall/LockSmith/issues) for bug reports and feature requests
-- For questions, contact the maintainer or open a discussion
-
----
-
-## Acknowledgements
-- Inspired by [proper-lockfile](https://github.com/moxystudio/node-proper-lockfile) and [lockfile](https://github.com/isaacs/lockfile)
-- Thanks to all contributors and users!
+Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ---
 

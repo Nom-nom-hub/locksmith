@@ -1,11 +1,19 @@
 {
   "name": "locksmithx",
-  "version": "1.0.0",
-  "description": "A modern, robust, and cross-platform file locking utility for Node.js.",
+  "version": "5.0.0",
+  "description": "The most advanced, feature-rich file locking utility for Node.js with analytics, monitoring, distributed backends, and enterprise features.",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "start": "node index.js",
+    "dashboard": "node -e \"require('./index').startDashboard()\"",
+    "api": "node -e \"require('./index').startAPI()\"",
+    "dev": "nodemon index.js",
+    "build": "npm run lint && npm test",
+    "docs": "jsdoc -c jsdoc.json",
+    "benchmark": "node benchmark/benchmark.js"
   },
   "keywords": [
     "file locking",
@@ -13,10 +21,38 @@
     "nodejs",
     "cross-platform",
     "fs",
-    "advisory lock"
+    "advisory lock",
+    "distributed locking",
+    "redis",
+    "consul",
+    "analytics",
+    "monitoring",
+    "enterprise",
+    "shared locks",
+    "exclusive locks",
+    "hierarchical locks",
+    "batch operations",
+    "lock pooling",
+    "health checks",
+    "audit trail",
+    "encryption",
+    "dashboard",
+    "api",
+    "plugins"
   ],
   "author": "Kaiden",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nom-nom-hub/LockSmith.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nom-nom-hub/LockSmith/issues"
+  },
+  "homepage": "https://github.com/Nom-nom-hub/LockSmith#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "graceful-fs": "^4.2.4",
     "retry": "^0.12.0",
@@ -24,6 +60,30 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "eslint": "^5.3.0"
+    "eslint": "^5.3.0",
+    "nodemon": "^3.0.0",
+    "jsdoc": "^4.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "optionalDependencies": {
+    "redis": "^4.6.0",
+    "consul": "^1.2.0",
+    "aws-sdk": "^2.1500.0",
+    "google-cloud-storage": "^7.0.0",
+    "@azure/storage-blob": "^12.17.0"
+  },
+  "peerDependencies": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "lib/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
