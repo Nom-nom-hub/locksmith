@@ -187,24 +187,26 @@ function getAllPlugins() {
 }
 
 // Cleanup function to properly clean up all resources
+/**
+ * Cleans up all analytics, plugins, and tracked locks.
+ * Logs errors during lock release for visibility.
+ */
 async function cleanup() {
     try {
         // Clean up analytics
         analytics.cleanup();
-        
         // Clean up any remaining locks
         const trackedLocks = advancedLocks.getTrackedLocks();
         for (const lock of trackedLocks) {
             try {
                 await lock.release();
             } catch (e) {
-                // Ignore cleanup errors
+                // Log cleanup errors for visibility
+                console.error('Error releasing lock during cleanup:', e);
             }
         }
-        
         // Clear plugin manager
         pluginManager.clearAll();
-        
         // Wait a bit for any pending operations to complete
         await new Promise(resolve => setTimeout(resolve, 100));
     } catch (error) {
@@ -355,6 +357,11 @@ function getLockTree() {
 }
 
 // Attach all methods to the lock function
+/**
+ * lock.lock: The main, advanced async lock API (recommended for most users).
+ * lock.acquire: Lower-level backend acquire (for custom backends or advanced use).
+ * Both are exported for compatibility, but lock.lock is the preferred entry point.
+ */
 lock.lock = lock;
 lock.unlock = unlock;
 lock.check = check;
