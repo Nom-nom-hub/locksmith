@@ -429,16 +429,24 @@ describe('Advanced Features', () => {
             
             // Try to acquire a write lock (should fail because read lock is active)
             let failed = false;
+            let errorType = null;
             try {
                 await locksmith.acquireReadWriteLock(file, { mode: 'write', timeout: 1000 });
                 assert.fail('Should not acquire write lock when read lock is active');
             } catch (error) {
+                errorType = error.constructor.name;
                 failed = error.message.includes('timeout') ||
                         error.message.includes('Write lock acquisition timeout') ||
+                        error.message.includes('Lock acquisition timeout') ||
                         error.code === 'ELOCKED' ||
-                        error.code === 'ENOTACQUIRED';
-                assert(failed, 'Should fail when trying to acquire write lock with active read lock');
+                        error.code === 'ENOTACQUIRED' ||
+                        error.code === 'ETIMEDOUT';
+                assert(failed, `Should fail when trying to acquire write lock with active read lock. Got error: ${errorType} - ${error.message}`);
             }
+            
+            // Verify the error is related to lock acquisition
+            assert(errorType === 'Error' || errorType === 'TimeoutError', 
+                   `Expected lock acquisition error, got: ${errorType}`);
             
             // Release the read lock
             await readLock();
