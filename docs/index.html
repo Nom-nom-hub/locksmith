@@ -7,1301 +7,204 @@
   <meta name="description" content="Locksmith: A modern, robust, and cross-platform file locking utility for Node.js with atomic operations, staleness detection, and crash recovery.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-  <style>
-    :root {
-      --primary: #3b82f6;
-      --primary-dark: #1d4ed8;
-      --secondary: #94a3b8;
-      --accent: #f59e0b;
-      --success: #10b981;
-      --danger: #ef4444;
-      --bg-primary: #1e293b;
-      --bg-secondary: #0f172a;
-      --bg-dark: #020617;
-      --text-primary: #f1f5f9;
-      --text-secondary: #cbd5e1;
-      --border: #334155;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      line-height: 1.6;
-      color: var(--text-primary);
-      background: var(--bg-secondary);
-    }
-
-    /* Header */
-    header {
-      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1e293b 100%);
-      color: white;
-      padding: 3rem 1rem 4rem 1rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-      opacity: 0.4;
-    }
-
-    .logo-container {
-      position: relative;
-      z-index: 2;
-      margin-bottom: 2rem;
-    }
-
-    .logo {
-      width: 120px;
-      height: 120px;
-      border-radius: 20px;
-      box-shadow: var(--shadow-lg);
-      border: 4px solid rgba(255, 255, 255, 0.2);
-      transition: transform 0.3s ease;
-    }
-
-    .logo:hover {
-      transform: scale(1.05);
-    }
-
-    .header-content {
-      position: relative;
-      z-index: 2;
-    }
-
-    h1 {
-      font-size: 3.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      letter-spacing: -2px;
-    }
-
-    .tagline {
-      font-size: 1.4rem;
-      margin-bottom: 2rem;
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 300;
-    }
-
-    .header-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
-      border-radius: 12px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .btn-primary {
-      background: #3b82f6;
-      color: white;
-      box-shadow: var(--shadow);
-    }
-
-    .btn-primary:hover {
-      background: #2563eb;
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .btn-secondary {
-      background: rgba(59, 130, 246, 0.1);
-      color: #3b82f6;
-      border: 2px solid rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(59, 130, 246, 0.2);
-      transform: translateY(-2px);
-    }
-
-    /* Navigation */
-    nav {
-      background: rgba(30, 41, 59, 0.95);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(10px);
-    }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 60px;
-    }
-
-    .nav-logo {
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--primary);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s ease;
-    }
-
-    .nav-links a:hover {
-      color: #3b82f6;
-    }
-
-    /* Main Content */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-
-    main {
-      padding: 3rem 0;
-    }
-
-    .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 4rem;
-    }
-
-    .stat-card {
-      background: var(--bg-primary);
-      padding: 2rem;
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #3b82f6;
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-label {
-      color: #cbd5e1;
-      font-weight: 500;
-    }
-
-    /* Sections */
-    section {
-      margin-bottom: 4rem;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    h2 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #f1f5f9;
-      margin-bottom: 1rem;
-    }
-
-    .section-subtitle {
-      font-size: 1.2rem;
-      color: #cbd5e1;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    /* Features Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    .feature-card {
-      background: var(--bg-primary);
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .feature-icon {
-      width: 48px;
-      height: 48px;
-      background: #3b82f6;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      color: white;
-      font-size: 1.5rem;
-    }
-
-    .feature-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: #f1f5f9;
-    }
-
-    .feature-description {
-      color: #cbd5e1;
-      line-height: 1.6;
-    }
-
-    /* Code Examples */
-    .code-examples {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    .code-card {
-      background: var(--bg-primary);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    .code-header {
-      background: var(--bg-dark);
-      color: white;
-      padding: 1rem 1.5rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .code-content {
-      padding: 1.5rem;
-    }
-
-    pre {
-      background: var(--bg-dark);
-      border-radius: 8px;
-      padding: 1.5rem;
-      overflow-x: auto;
-      margin: 0;
-    }
-
-    code {
-      font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    /* Comparison Table */
-    .comparison-table {
-      background: var(--bg-primary);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      margin-bottom: 3rem;
-    }
-
-    .table-header {
-      background: #3b82f6;
-      color: white;
-      padding: 1.5rem;
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 1rem 1.5rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    th {
-      background: #0f172a;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-
-    .check {
-      color: var(--success);
-      font-weight: 600;
-    }
-
-    .cross {
-      color: var(--danger);
-      font-weight: 600;
-    }
-
-    .partial {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    /* Installation */
-    .installation {
-      background: var(--bg-primary);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      margin-bottom: 3rem;
-    }
-
-    .install-command {
-      background: #020617;
-      color: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      font-family: 'Fira Code', monospace;
-      font-size: 1.1rem;
-      margin: 1rem 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .copy-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.3s ease;
-    }
-
-    .copy-btn:hover {
-      background: #2563eb;
-    }
-
-    /* API Reference */
-    .api-section {
-      background: var(--bg-primary);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      margin-bottom: 2rem;
-    }
-
-    .api-method {
-      background: #0f172a;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-family: 'Fira Code', monospace;
-      font-weight: 600;
-      color: #3b82f6;
-    }
-
-    .api-params {
-      margin: 1rem 0;
-    }
-
-    .param-item {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-      padding: 0.5rem;
-      background: #0f172a;
-      border-radius: 6px;
-    }
-
-    .param-name {
-      font-weight: 600;
-      color: #3b82f6;
-      min-width: 120px;
-    }
-
-    .param-type {
-      color: #f59e0b;
-      font-weight: 500;
-    }
-
-    .param-description {
-      color: #cbd5e1;
-      flex: 1;
-    }
-
-    /* Footer */
-    footer {
-      background: #020617;
-      color: white;
-      padding: 3rem 0 2rem 0;
-      margin-top: 4rem;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
-      text-align: center;
-    }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .footer-links a {
-      color: rgba(255, 255, 255, 0.8);
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .footer-links a:hover {
-      color: white;
-    }
-
-    .footer-text {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.9rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2.5rem;
-      }
-
-      .tagline {
-        font-size: 1.2rem;
-      }
-
-      .header-buttons {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .nav-links {
-        display: none;
-      }
-
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .code-examples {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-stats {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      table {
-        font-size: 0.9rem;
-      }
-
-      th, td {
-        padding: 0.75rem;
-      }
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-in-up {
-      animation: fadeInUp 0.6s ease-out;
-    }
-
-    /* Syntax highlighting overrides */
-    .token.comment {
-      color: #64748b !important;
-    }
-
-    .token.keyword {
-      color: #f59e0b !important;
-    }
-
-    .token.string {
-      color: #10b981 !important;
-    }
-
-    .token.function {
-      color: #3b82f6 !important;
-    }
-
-    .token.number {
-      color: #8b5cf6 !important;
-    }
-
-    .token.operator {
-      color: #f1f5f9 !important;
-    }
-
-    .token.punctuation {
-      color: #cbd5e1 !important;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Header -->
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
   <header>
     <div class="logo-container">
-      <img src="../locksmith-logo.png" alt="Locksmith Logo" class="logo">
+      <img src="locksmith-logo.png" alt="Locksmith Logo" class="logo">
     </div>
     <div class="header-content">
       <h1>Locksmith</h1>
-      <p class="tagline">Professional file locking for Node.js applications</p>
+      <p class="tagline">Professional File Locking for Node.js</p>
       <div class="header-buttons">
-        <a href="https://www.npmjs.com/package/locksmithx" class="btn btn-primary" target="_blank">
-          📦 Install from npm
-        </a>
-        <a href="https://github.com/Nom-nom-hub/LockSmith" class="btn btn-secondary" target="_blank">
-          🐙 View on GitHub
-        </a>
+        <a href="#installation" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/Nom-nom-hub/locksmith" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
       </div>
     </div>
   </header>
 
-  <!-- Navigation -->
   <nav>
-    <div class="nav-container">
-      <div class="nav-logo">🔒 Locksmith</div>
-      <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#installation">Installation</a></li>
-        <li><a href="#usage">Usage</a></li>
-        <li><a href="#api">API</a></li>
-        <li><a href="#comparison">Comparison</a></li>
-      </ul>
+    <div class="nav-brand">
+      <span class="lock-icon">🔒</span>
+      Locksmith
     </div>
+    <div class="nav-links" id="nav-links">
+      <a href="#features">Features</a>
+      <a href="#installation">Installation</a>
+      <a href="#usage">Usage</a>
+      <a href="#api">API</a>
+      <a href="#examples">Examples</a>
+    </div>
+    <button class="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-controls="nav-links" aria-expanded="false">
+      ☰
+    </button>
   </nav>
 
-  <!-- Main Content -->
-  <main class="container">
-    <!-- Hero Stats -->
-    <div class="hero-stats">
-      <div class="stat-card fade-in-up">
-        <div class="stat-number">24</div>
-        <div class="stat-label">Advanced Features</div>
-      </div>
-      <div class="stat-card fade-in-up">
-        <div class="stat-number">100%</div>
-        <div class="stat-label">Cross-platform</div>
-      </div>
-      <div class="stat-card fade-in-up">
-        <div class="stat-number">0</div>
-        <div class="stat-label">Core Dependencies</div>
-      </div>
-      <div class="stat-card fade-in-up">
-        <div class="stat-number">⚡</div>
-        <div class="stat-label">Enterprise Ready</div>
-      </div>
-    </div>
-
-    <!-- Features -->
-    <section id="features">
-      <div class="section-header">
-        <h2>Why Choose Locksmith?</h2>
-        <p class="section-subtitle">Built for modern Node.js applications that demand reliability, performance, and cross-platform compatibility.</p>
-      </div>
-      
+  <main id="main-content">
+    <section class="section" id="features">
+      <h2>Features</h2>
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon">🔓</div>
-          <div class="feature-title">Read-Write Locks</div>
-          <div class="feature-description">Support for shared (multiple readers) and exclusive (single writer) lock modes with upgrade/downgrade capabilities.</div>
+          <h4>🔒 Atomic Operations</h4>
+          <p>Guaranteed atomic lock acquisition and release operations with proper error handling.</p>
         </div>
-        
         <div class="feature-card">
-          <div class="feature-icon">🌐</div>
-          <div class="feature-title">Distributed Backends</div>
-          <div class="feature-description">Redis, Consul, and cloud storage backends for distributed systems and microservices.</div>
+          <h4>⚡ High Performance</h4>
+          <p>Optimized for speed with minimal overhead and efficient resource management.</p>
         </div>
-        
         <div class="feature-card">
-          <div class="feature-icon">📊</div>
-          <div class="feature-title">Real-time Analytics</div>
-          <div class="feature-description">Comprehensive metrics, monitoring, and lock tree visualization with event-driven architecture.</div>
+          <h4>🛡️ Crash Recovery</h4>
+          <p>Automatic detection and cleanup of stale locks from crashed processes.</p>
         </div>
-        
         <div class="feature-card">
-          <div class="feature-icon">🛡️</div>
-          <div class="feature-title">Enterprise Security</div>
-          <div class="feature-description">Encryption, audit trails, role-based access control, and comprehensive security features.</div>
+          <h4>🌐 Cross-Platform</h4>
+          <p>Works seamlessly across Windows, macOS, and Linux with consistent behavior.</p>
         </div>
-        
         <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <div class="feature-title">Performance Optimized</div>
-          <div class="feature-description">Lock pooling, batch operations, caching, and intelligent retry logic for maximum performance.</div>
+          <h4>📊 Advanced Analytics</h4>
+          <p>Built-in performance monitoring and lock usage analytics.</p>
         </div>
-        
         <div class="feature-card">
-          <div class="feature-icon">🔧</div>
-          <div class="feature-title">Plugin System</div>
-          <div class="feature-description">Extensible architecture with custom backend support and comprehensive plugin ecosystem.</div>
+          <h4>🔧 Plugin System</h4>
+          <p>Extensible architecture with support for custom plugins and backends.</p>
         </div>
       </div>
     </section>
 
-    <!-- Installation -->
-    <section id="installation">
-      <div class="section-header">
-        <h2>Quick Installation</h2>
-        <p class="section-subtitle">Get started with Locksmith in seconds</p>
-      </div>
+    <section class="section" id="installation">
+      <h2>Installation</h2>
+      <p>Install Locksmith using npm:</p>
+      <pre><code class="language-bash">npm install locksmithx</code></pre>
       
-      <div class="installation">
-        <h3>Install from npm</h3>
-        <div class="install-command">
-          <span>npm install locksmithx</span>
-          <button class="copy-btn" onclick="copyToClipboard('npm install locksmithx')">Copy</button>
-        </div>
-        
-        <h3>Or use yarn</h3>
-        <div class="install-command">
-          <span>yarn add locksmithx</span>
-          <button class="copy-btn" onclick="copyToClipboard('yarn add locksmithx')">Copy</button>
-        </div>
-      </div>
-    </section>
+      <h3>Quick Start</h3>
+      <pre><code class="language-javascript">const locksmith = require('locksmithx');
 
-    <!-- Usage Examples -->
-    <section id="usage">
-      <div class="section-header">
-        <h2>Usage Examples</h2>
-        <p class="section-subtitle">Simple, powerful, and reliable file locking</p>
-      </div>
-      
-      <div class="code-examples">
-        <div class="code-card">
-          <div class="code-header">
-            🔒 Basic Locking
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">const locksmith = require('locksmithx');
-
-(async () => {
-  // Acquire a lock on a file
-  const release = await locksmith.lock('some/file');
-  
-  try {
-    // Do something while the file is locked
-    console.log('File is locked!');
-  } finally {
-    // Always release the lock
-    await release();
-  }
-})();</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            ⚙️ Advanced Configuration
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">const release = await locksmith.lock('path/to/file', {
-  stale: 15000,        // 15s before lock is stale
-  update: 5000,        // Update every 5s
-  retries: 3,          // Retry 3 times
-  onCompromised: (err) => {
-    console.error('Lock compromised:', err);
-  }
-});
-
-// ... do work ...
-await release();</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            🔍 Check Lock Status
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">// Check if file is locked
-const isLocked = await locksmith.check('path/to/file');
-console.log(isLocked ? 'Locked' : 'Unlocked');
-
-// Force unlock if needed
-await locksmith.unlock('path/to/file');</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            ⚡ Synchronous API
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">// Synchronous version
-const release = locksmith.lockSync('path/to/file');
-
+// Basic usage
+const release = await locksmith.lock('myfile.txt');
 try {
-  // Do work synchronously
-  console.log('File locked synchronously');
-} finally {
-  release();
-}</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            🔓 Shared Locks
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">// Multiple readers can access simultaneously
-const release1 = await locksmith.lock('shared/file', { mode: 'shared' });
-const release2 = await locksmith.lock('shared/file', { mode: 'shared' });
-
-try {
-  // Both can read simultaneously
-  console.log('Multiple readers active');
-} finally {
-  await release1();
-  await release2();
-}</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            🔒 Exclusive Locks
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">// Only one writer at a time
-const release = await locksmith.lock('exclusive/file', { mode: 'exclusive' });
-
-try {
-  // Exclusive access - no other processes can lock
-  console.log('Exclusive write access');
+  // Your critical section here
+  console.log('File is locked!');
 } finally {
   await release();
 }</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            📊 Analytics & Monitoring
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">// Real-time metrics and monitoring
-const metrics = locksmith.getMetrics();
-console.log('Active locks:', metrics.activeLocks);
+    </section>
 
-// Event-driven monitoring
-locksmith.on('lock-acquired', (data) => {
-  console.log(`Lock acquired: ${data.file} in ${data.duration}ms`);
+    <section class="section" id="usage">
+      <h2>Usage</h2>
+      
+      <h3>Basic Locking</h3>
+      <pre><code class="language-javascript">const locksmith = require('locksmithx');
+
+// Acquire a lock
+const release = await locksmith.lock('important-file.txt');
+
+try {
+  // Critical section - only one process can execute this at a time
+  await fs.writeFile('important-file.txt', 'updated content');
+} finally {
+  // Always release the lock
+  await release();
+}</code></pre>
+
+      <h3>Advanced Features</h3>
+      <pre><code class="language-javascript">// Read-write locks
+const readLock = await locksmith.acquireReadWriteLock('data.json', { mode: 'read' });
+const writeLock = await locksmith.acquireReadWriteLock('data.json', { mode: 'write' });
+
+// Hierarchical locks
+const hierarchicalLock = await locksmith.acquireHierarchicalLock('child.txt', { 
+  parent: 'parent.txt' 
 });
 
-// Lock tree visualization
-const tree = locksmith.getLockTree();
-console.log(tree);</code></pre>
-          </div>
-        </div>
-        
-        <div class="code-card">
-          <div class="code-header">
-            🌐 Distributed Locking
-          </div>
-          <div class="code-content">
-            <pre><code class="language-javascript">// Redis backend for distributed systems
-await locksmith.lock('shared-resource', {
-  backend: 'redis',
-  redis: { host: 'localhost', port: 6379 }
-});
+// Named locks
+const namedLock = await locksmith.acquireNamedLock('my-resource');
 
-// Consul backend for service discovery
-await locksmith.lock('service-lock', {
-  backend: 'consul',
-  consul: { host: 'localhost', port: 8500 }
-});</code></pre>
-          </div>
-        </div>
-      </div>
+// Upgrade/downgrade locks
+const readLock = await locksmith.acquireReadWriteLock('file.txt', { mode: 'read' });
+const writeLock = await locksmith.upgradeToWrite('file.txt');
+const backToRead = await locksmith.downgradeToRead('file.txt');</code></pre>
     </section>
 
-    <!-- API Reference -->
-    <section id="api">
-      <div class="section-header">
-        <h2>API Reference</h2>
-        <p class="section-subtitle">Complete API documentation for all Locksmith methods</p>
-      </div>
+    <section class="section" id="api">
+      <h2>API Reference</h2>
       
-      <div class="api-section">
-        <h3>lock(file, [options])</h3>
-        <p>Acquires a lock on a file. Returns a Promise resolving to a release function.</p>
-        
-        <div class="api-params">
-          <div class="param-item">
-            <span class="param-name">file</span>
-            <span class="param-type">string</span>
-            <span class="param-description">Path to the file to lock</span>
-          </div>
-          <div class="param-item">
-            <span class="param-name">stale</span>
-            <span class="param-type">number</span>
-            <span class="param-description">Milliseconds before lock is considered stale (default: 10000)</span>
-          </div>
-          <div class="param-item">
-            <span class="param-name">update</span>
-            <span class="param-type">number</span>
-            <span class="param-description">Milliseconds between lockfile updates (default: stale/2)</span>
-          </div>
-          <div class="param-item">
-            <span class="param-name">retries</span>
-            <span class="param-type">number|object</span>
-            <span class="param-description">Number of retries or retry options (default: 0)</span>
-          </div>
-          <div class="param-item">
-            <span class="param-name">onCompromised</span>
-            <span class="param-type">function</span>
-            <span class="param-description">Callback if lock is compromised</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="api-section">
-        <h3>unlock(file, [options])</h3>
-        <p>Releases a lock on a file. Returns a Promise.</p>
-      </div>
-      
-      <div class="api-section">
-        <h3>check(file, [options])</h3>
-        <p>Checks if a file is locked and not stale. Returns a Promise resolving to a boolean.</p>
-      </div>
-      
-      <div class="api-section">
-        <h3>Synchronous Methods</h3>
-        <p>All methods have synchronous counterparts: <code>lockSync()</code>, <code>unlockSync()</code>, <code>checkSync()</code></p>
-      </div>
+      <h3>Core Functions</h3>
+      <ul>
+        <li><code>lock(file, options)</code> - Acquire an exclusive lock</li>
+        <li><code>unlock(file, options)</code> - Release a lock</li>
+        <li><code>check(file, options)</code> - Check if a file is locked</li>
+      </ul>
+
+      <h3>Advanced Lock Types</h3>
+      <ul>
+        <li><code>acquireReadWriteLock(file, options)</code> - Read-write lock</li>
+        <li><code>acquireHierarchicalLock(file, options)</code> - Hierarchical lock</li>
+        <li><code>acquireNamedLock(name, options)</code> - Named lock</li>
+      </ul>
+
+      <h3>Upgrade/Downgrade</h3>
+      <ul>
+        <li><code>upgradeToWrite(file, options)</code> - Upgrade read to write</li>
+        <li><code>downgradeToRead(file, options)</code> - Downgrade write to read</li>
+        <li><code>upgradeToExclusive(file, options)</code> - Upgrade shared to exclusive</li>
+        <li><code>downgradeToShared(file, options)</code> - Downgrade exclusive to shared</li>
+      </ul>
     </section>
 
-    <!-- Unique Features -->
-    <section>
-      <div class="section-header">
-        <h2>What Makes Locksmith Unique?</h2>
-        <p class="section-subtitle">Advanced features that set Locksmith apart from the competition</p>
-      </div>
+    <section class="section" id="examples">
+      <h2>Examples</h2>
       
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🔓</div>
-          <div class="feature-title">Shared & Exclusive Locks</div>
-          <div class="feature-description">Support for both shared (multiple readers) and exclusive (single writer) lock modes. Perfect for read-heavy workloads.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🌐</div>
-          <div class="feature-title">Network Filesystem Optimized</div>
-          <div class="feature-description">Specifically designed for NFS, SMB, and distributed systems with configurable timeouts and retry logic.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <div class="feature-title">Zero Dependencies</div>
-          <div class="feature-description">Core functionality has zero external dependencies, making it perfect for minimal deployments and edge environments.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🛡️</div>
-          <div class="feature-title">Advanced Crash Recovery</div>
-          <div class="feature-description">Signal handlers and exit cleanup ensure locks are properly released even when processes crash or are killed.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🔧</div>
-          <div class="feature-title">Flexible Configuration</div>
-          <div class="feature-description">Custom lockfile paths, configurable staleness detection, retry logic, and custom file system support.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">📊</div>
-          <div class="feature-title">Comprehensive Monitoring</div>
-          <div class="feature-description">Built-in compromise detection, detailed error codes, and lock status checking for better observability.</div>
-        </div>
-      </div>
-    </section>
+      <h3>Database Backup</h3>
+      <pre><code class="language-javascript">const locksmith = require('locksmithx');
 
-    <!-- Comparison -->
-    <section id="comparison">
-      <div class="section-header">
-        <h2>Comprehensive Comparison</h2>
-        <p class="section-subtitle">Detailed feature comparison with other file locking libraries</p>
-      </div>
-      
-      <div class="comparison-table">
-        <div class="table-header">Ultimate Feature Comparison - Locksmith vs The World</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Feature Category</th>
-              <th>Locksmith 2.0</th>
-              <th>proper-lockfile</th>
-              <th>lockfile</th>
-              <th>fs-ext</th>
-              <th>Other Libraries</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Core Locking -->
-            <tr>
-              <td><strong>🔒 Core Lock Types</strong></td>
-              <td class="check">✅ Shared, Exclusive, Read-Write, Hierarchical, Named</td>
-              <td class="cross">❌ Exclusive only</td>
-              <td class="cross">❌ Exclusive only</td>
-              <td class="cross">❌ Exclusive only</td>
-              <td class="cross">❌ None support multiple types</td>
-            </tr>
-            <tr>
-              <td><strong>🌐 Distributed Backends</strong></td>
-              <td class="check">✅ Redis, Consul, Memory, File, Custom</td>
-              <td class="cross">❌ File only</td>
-              <td class="cross">❌ File only</td>
-              <td class="cross">❌ Native only</td>
-              <td class="cross">❌ None support multiple backends</td>
-            </tr>
-            <tr>
-              <td><strong>📊 Analytics & Monitoring</strong></td>
-              <td class="check">✅ Real-time metrics, events, lock tree, dashboard</td>
-              <td class="cross">❌ No monitoring</td>
-              <td class="cross">❌ No monitoring</td>
-              <td class="cross">❌ No monitoring</td>
-              <td class="cross">❌ None have built-in analytics</td>
-            </tr>
-            <tr>
-              <td><strong>🛡️ Enterprise Security</strong></td>
-              <td class="check">✅ Encryption, audit trails, RBAC, health checks</td>
-              <td class="cross">❌ No security features</td>
-              <td class="cross">❌ No security features</td>
-              <td class="cross">❌ No security features</td>
-              <td class="cross">❌ None have enterprise security</td>
-            </tr>
-            
-            <!-- Advanced Features -->
-            <tr>
-              <td><strong>⚡ Performance Features</strong></td>
-              <td class="check">✅ Lock pooling, batch operations, caching, smart retry</td>
-              <td class="cross">❌ Basic retry only</td>
-              <td class="cross">❌ No performance features</td>
-              <td class="cross">❌ No performance features</td>
-              <td class="cross">❌ None have performance optimizations</td>
-            </tr>
-            <tr>
-              <td><strong>🔧 Developer Experience</strong></td>
-              <td class="check">✅ TypeScript, debug mode, lock visualization, plugins</td>
-              <td class="cross">❌ No TypeScript</td>
-              <td class="cross">❌ No TypeScript</td>
-              <td class="cross">❌ No TypeScript</td>
-              <td class="partial">⚠️ Some have basic TypeScript</td>
-            </tr>
-            <tr>
-              <td><strong>🌍 Platform Support</strong></td>
-              <td class="check">✅ Windows, Linux, macOS, NFS, SMB, Cloud</td>
-              <td class="check">✅ Windows, Linux, macOS</td>
-              <td class="partial">⚠️ Unix-like only</td>
-              <td class="partial">⚠️ Unix-like only</td>
-              <td class="partial">⚠️ Varies by library</td>
-            </tr>
-            <tr>
-              <td><strong>🔄 Advanced Operations</strong></td>
-              <td class="check">✅ Conditional locking, inheritance, migration, upgrade/downgrade</td>
-              <td class="cross">❌ Basic operations only</td>
-              <td class="cross">❌ Basic operations only</td>
-              <td class="cross">❌ Basic operations only</td>
-              <td class="cross">❌ None support advanced operations</td>
-            </tr>
-            
-            <!-- Enterprise Features -->
-            <tr>
-              <td><strong>📈 Real-time Dashboard</strong></td>
-              <td class="check">✅ Web dashboard with live metrics and lock visualization</td>
-              <td class="cross">❌ No dashboard</td>
-              <td class="cross">❌ No dashboard</td>
-              <td class="cross">❌ No dashboard</td>
-              <td class="cross">❌ None have dashboards</td>
-            </tr>
-            <tr>
-              <td><strong>🔌 REST API</strong></td>
-              <td class="check">✅ Full REST API with rate limiting and CORS</td>
-              <td class="cross">❌ No API</td>
-              <td class="cross">❌ No API</td>
-              <td class="cross">❌ No API</td>
-              <td class="cross">❌ None have APIs</td>
-            </tr>
-            <tr>
-              <td><strong>🔌 Plugin System</strong></td>
-              <td class="check">✅ Custom backends, extensible architecture</td>
-              <td class="cross">❌ No plugins</td>
-              <td class="cross">❌ No plugins</td>
-              <td class="cross">❌ No plugins</td>
-              <td class="cross">❌ None have plugin systems</td>
-            </tr>
-            <tr>
-              <td><strong>🔍 Health Monitoring</strong></td>
-              <td class="check">✅ Automatic health checks, repair, corruption detection</td>
-              <td class="cross">❌ No health monitoring</td>
-              <td class="cross">❌ No health monitoring</td>
-              <td class="cross">❌ No health monitoring</td>
-              <td class="cross">❌ None have health monitoring</td>
-            </tr>
-            
-            <!-- Technical Excellence -->
-            <tr>
-              <td><strong>📦 Dependencies</strong></td>
-              <td class="check">✅ Zero core dependencies (optional for advanced features)</td>
-              <td class="cross">❌ 8+ dependencies</td>
-              <td class="cross">❌ 3+ dependencies</td>
-              <td class="cross">❌ Native bindings required</td>
-              <td class="partial">⚠️ Most have dependencies</td>
-            </tr>
-            <tr>
-              <td><strong>🚀 Bundle Size</strong></td>
-              <td class="check">✅ ~15KB core, ~45KB with all features</td>
-              <td class="cross">❌ ~45KB minified</td>
-              <td class="cross">❌ ~25KB minified</td>
-              <td class="cross">❌ Native module size</td>
-              <td class="partial">⚠️ Varies, usually larger</td>
-            </tr>
-            <tr>
-              <td><strong>⚡ Performance</strong></td>
-              <td class="check">✅ Optimized atomic operations, pooling, batching</td>
-              <td class="check">✅ Optimized atomic operations</td>
-              <td class="partial">⚠️ Basic file operations</td>
-              <td class="check">✅ Native performance</td>
-              <td class="partial">⚠️ Varies by implementation</td>
-            </tr>
-            <tr>
-              <td><strong>🛠️ Error Handling</strong></td>
-              <td class="check">✅ Comprehensive error codes, detailed logging, recovery</td>
-              <td class="check">✅ Comprehensive error codes</td>
-              <td class="partial">⚠️ Basic error handling</td>
-              <td class="partial">⚠️ Basic error handling</td>
-              <td class="partial">⚠️ Varies by library</td>
-            </tr>
-            
-            <!-- Development & Maintenance -->
-            <tr>
-              <td><strong>🧪 Testing</strong></td>
-              <td class="check">✅ Jest test suite, comprehensive coverage</td>
-              <td class="check">✅ Mocha test suite</td>
-              <td class="partial">⚠️ Basic tests</td>
-              <td class="partial">⚠️ Basic tests</td>
-              <td class="partial">⚠️ Varies by library</td>
-            </tr>
-            <tr>
-              <td><strong>📚 Documentation</strong></td>
-              <td class="check">✅ Comprehensive docs, examples, API reference</td>
-              <td class="check">✅ Good documentation</td>
-              <td class="partial">⚠️ Basic README</td>
-              <td class="partial">⚠️ Basic README</td>
-              <td class="partial">⚠️ Varies by library</td>
-            </tr>
-            <tr>
-              <td><strong>🔄 Maintenance</strong></td>
-              <td class="check">✅ Active development, regular updates</td>
-              <td class="partial">⚠️ Maintenance mode</td>
-              <td class="cross">❌ Deprecated</td>
-              <td class="partial">⚠️ Limited updates</td>
-              <td class="partial">⚠️ Varies by project</td>
-            </tr>
-            <tr>
-              <td><strong>🎯 Use Cases</strong></td>
-              <td class="check">✅ Simple files, distributed systems, enterprise, cloud</td>
-              <td class="partial">⚠️ Simple files only</td>
-              <td class="partial">⚠️ Simple files only</td>
-              <td class="partial">⚠️ Simple files only</td>
-              <td class="partial">⚠️ Limited use cases</td>
-            </tr>
-            
-            <!-- Feature Count Summary -->
-            <tr style="background: #1e293b; font-weight: bold;">
-              <td><strong>🏆 Total Advanced Features</strong></td>
-              <td class="check">✅ 24+ Unique Features</td>
-              <td class="cross">❌ 0 Advanced Features</td>
-              <td class="cross">❌ 0 Advanced Features</td>
-              <td class="cross">❌ 0 Advanced Features</td>
-              <td class="cross">❌ 0-2 Advanced Features</td>
-            </tr>
-            <tr style="background: #1e293b; font-weight: bold;">
-              <td><strong>🎖️ Enterprise Ready</strong></td>
-              <td class="check">✅ Full Enterprise Suite</td>
-              <td class="cross">❌ Basic Only</td>
-              <td class="cross">❌ Basic Only</td>
-              <td class="cross">❌ Basic Only</td>
-              <td class="cross">❌ Basic Only</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+async function backupDatabase() {
+  const release = await locksmith.lock('database-backup.lock');
+  
+  try {
+    console.log('Starting database backup...');
+    await performBackup();
+    console.log('Backup completed successfully');
+  } finally {
+    await release();
+  }
+}</code></pre>
 
-    <!-- Best Practices -->
-    <section>
-      <div class="section-header">
-        <h2>Best Practices</h2>
-        <p class="section-subtitle">Follow these guidelines for optimal file locking</p>
-      </div>
-      
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <div class="feature-title">Always Release Locks</div>
-          <div class="feature-description">Use try/finally blocks to ensure locks are always released, preventing deadlocks.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">⚠️</div>
-          <div class="feature-title">Handle Compromised Locks</div>
-          <div class="feature-description">Use the onCompromised callback to handle unexpected lock loss gracefully.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">⚙️</div>
-          <div class="feature-title">Tune Intervals</div>
-          <div class="feature-description">Adjust stale and update intervals based on your workload and environment.</div>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🔗</div>
-          <div class="feature-title">Advisory Locking</div>
-          <div class="feature-description">Remember that Locksmith uses advisory locking - only processes using Locksmith will honor the lock.</div>
-        </div>
-      </div>
+      <h3>Configuration Management</h3>
+      <pre><code class="language-javascript">async function updateConfig() {
+  const readLock = await locksmith.acquireReadWriteLock('config.json', { mode: 'read' });
+  
+  try {
+    const config = await fs.readFile('config.json', 'utf8');
+    const parsed = JSON.parse(config);
+    
+    // Upgrade to write lock for updates
+    await readLock();
+    const writeLock = await locksmith.acquireReadWriteLock('config.json', { mode: 'write' });
+    
+    try {
+      parsed.lastUpdated = new Date().toISOString();
+      await fs.writeFile('config.json', JSON.stringify(parsed, null, 2));
+    } finally {
+      await writeLock();
+    }
+  } finally {
+    await readLock();
+  }
+}</code></pre>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer>
-    <div class="footer-content">
-      <div class="footer-links">
-        <a href="https://github.com/Nom-nom-hub/LockSmith" target="_blank">GitHub</a>
-        <a href="https://www.npmjs.com/package/locksmithx" target="_blank">npm</a>
-        <a href="../README.md" target="_blank">Documentation</a>
-        <a href="https://github.com/Nom-nom-hub/LockSmith/issues" target="_blank">Issues</a>
-      </div>
-      <div class="footer-text">
-        <p>Maintained by <a href="https://github.com/Nom-nom-hub" style="color: white;">@Nom-nom-hub</a> | MIT License</p>
-        <p>Built with ❤️ for the Node.js community</p>
-      </div>
-    </div>
+    <p>&copy; 2024 Locksmith. Built with ❤️ for the Node.js community.</p>
+    <p>Maintained by <a href="https://github.com/Nom-nom-hub" target="_blank" rel="noopener">Nom-nom-hub</a></p>
   </footer>
 
-  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-  <script>
-    // Copy to clipboard functionality
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        // Show feedback
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
-        btn.style.background = '#10b981';
-        
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = '';
-        }, 2000);
-      });
-    }
-
-    // Smooth scrolling for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    });
-
-    // Intersection Observer for animations
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
-      });
-    }, observerOptions);
-
-    // Observe all feature cards and other elements
-    document.querySelectorAll('.feature-card, .code-card, .api-section').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(30px)';
-      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-      observer.observe(el);
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html> 

@@ -2,7 +2,7 @@
 
 const lockfile = require('./lib/lockfile');
 const advancedLocks = require('./lib/advanced-locks');
-const backendManager = require('./lib/distributed-backends');
+const backendManager = require('./lib/backend-manager-singleton');
 const analytics = require('./lib/analytics');
 const { PluginManager, LoggingPlugin, MetricsPlugin } = require('./lib/plugins');
 
@@ -26,6 +26,9 @@ async function lock(file, options = {}) {
         // Execute before hooks
         const hookContext = await pluginManager.executeHooks('beforeAcquire', middlewareContext);
         
+        // Execute preLock hooks (for test compatibility)
+        await pluginManager.executeHooks('preLock', hookContext);
+        
         let release;
         let hierarchicalLockObj = null;
         
@@ -47,6 +50,9 @@ async function lock(file, options = {}) {
         // Track lock acquisition
         analytics.trackLockAcquired(file, options);
         
+        // Execute postLock hooks (for test compatibility)
+        await pluginManager.executeHooks('postLock', { ...hookContext, release: release || (hierarchicalLockObj && hierarchicalLockObj.release) });
+        
         // Execute after hooks
         await pluginManager.executeHooks('afterAcquire', { ...hookContext, release: release || (hierarchicalLockObj && hierarchicalLockObj.release) });
         
@@ -66,6 +72,9 @@ async function lock(file, options = {}) {
                 await pluginManager.executeHooks('beforeRelease', { file, options });
                 
                 await release();
+                
+                // Untrack the lock after successful release
+                advancedLocks.untrackLock(file, options);
                 
                 analytics.trackLockReleased(file);
                 await pluginManager.executeHooks('afterRelease', { file, options });
@@ -175,6 +184,34 @@ function getPluginInfo(name) {
 
 function getAllPlugins() {
     return pluginManager.getAllPlugins();
+}
+
+// Cleanup function to properly clean up all resources
+/**
+ * Cleans up all analytics, plugins, and tracked locks.
+ * Logs errors during lock release for visibility.
+ */
+async function cleanup() {
+    try {
+        // Clean up analytics
+        analytics.cleanup();
+        // Clean up any remaining locks
+        const trackedLocks = advancedLocks.getTrackedLocks();
+        for (const lock of trackedLocks) {
+            try {
+                await lock.release();
+            } catch (e) {
+                // Log cleanup errors for visibility
+                console.error('Error releasing lock during cleanup:', e);
+            }
+        }
+        // Clear plugin manager
+        pluginManager.clearAll();
+        // Wait a bit for any pending operations to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (error) {
+        console.error('Cleanup error:', error);
+    }
 }
 
 // Health monitoring
@@ -319,56 +356,40 @@ function getLockTree() {
     return analytics.getLockTree();
 }
 
-// Export all functions and objects
-module.exports = {
-    // Core API (backward compatible)
-    lock,
-    unlock,
-    check,
-    
-    // Advanced lock types
-    acquireReadWriteLock,
-    acquireHierarchicalLock,
-    acquireNamedLock,
-    
-    // Backend management
-    registerBackend,
-    getBackend,
-    
-    // Analytics and monitoring
-    getMetrics,
-    getPerformanceReport,
-    getLockStats,
-    
-    // Plugin management
-    registerPlugin,
-    unregisterPlugin,
-    getPluginInfo,
-    getAllPlugins,
-    
-    // Health monitoring
-    checkHealth,
-    
-    // Configuration
-    getConfig,
-    updateConfig,
-    
-    // Utilities
-    formatBytes,
-    formatDuration,
-    
-    // Internal modules (for advanced usage)
-    _analytics: analytics,
-    _pluginManager: pluginManager,
-    _backendManager: backendManager,
-    _advancedLocks: advancedLocks,
-    getLockTree,
-    
-    // Export upgrade/downgrade functions
-    upgradeToWrite: (file, options) => advancedLocks.upgradeToWrite(file, options),
-    downgradeToRead: (file, options) => advancedLocks.downgradeToRead(file, options),
-    upgradeToExclusive: (file, options) => advancedLocks.upgradeToExclusive(file, options),
-    downgradeToShared: (file, options) => advancedLocks.downgradeToShared(file, options),
-    canUpgrade: (file, targetType, options) => advancedLocks.canUpgrade(file, targetType, options),
-    getTrackedLocks: () => advancedLocks.getTrackedLocks()
-};
+// Attach all methods to the lock function
+/**
+ * lock.lock: The main, advanced async lock API (recommended for most users).
+ * lock.acquire: Lower-level backend acquire (for custom backends or advanced use).
+ * Both are exported for compatibility, but lock.lock is the preferred entry point.
+ */
+lock.lock = lock;
+lock.unlock = unlock;
+lock.check = check;
+lock.acquireReadWriteLock = acquireReadWriteLock;
+lock.acquireHierarchicalLock = acquireHierarchicalLock;
+lock.acquireNamedLock = acquireNamedLock;
+lock.registerBackend = registerBackend;
+lock.getBackend = getBackend;
+lock.getMetrics = getMetrics;
+lock.getPerformanceReport = getPerformanceReport;
+lock.getLockStats = getLockStats;
+lock.registerPlugin = registerPlugin;
+lock.unregisterPlugin = unregisterPlugin;
+lock.getPluginInfo = getPluginInfo;
+lock.getAllPlugins = getAllPlugins;
+lock.cleanup = cleanup;
+// Advanced/utility API methods for test compatibility
+lock.getTrackedLocks = (...args) => advancedLocks.getTrackedLocks(...args);
+lock.checkHealth = (...args) => checkHealth(...args);
+lock.getConfig = (...args) => getConfig(...args);
+lock.updateConfig = (...args) => updateConfig(...args);
+lock.formatBytes = (...args) => formatBytes(...args);
+lock.formatDuration = (...args) => formatDuration(...args);
+lock.upgradeToWrite = (...args) => advancedLocks.upgradeToWrite(...args);
+lock.downgradeToRead = (...args) => advancedLocks.downgradeToRead(...args);
+lock.upgradeToExclusive = (...args) => advancedLocks.upgradeToExclusive(...args);
+lock.downgradeToShared = (...args) => advancedLocks.downgradeToShared(...args);
+lock.canUpgrade = (...args) => advancedLocks.canUpgrade(...args);
+lock.acquire = (...args) => backendManager.acquire(...args);
+
+module.exports = lock;
