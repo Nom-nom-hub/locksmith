@@ -1,6 +1,6 @@
 {
   "name": "locksmithx",
-  "version": "5.0.0",
+  "version": "5.0.2",
   "description": "The most advanced, feature-rich file locking utility for Node.js with analytics, monitoring, distributed backends, and enterprise features.",
   "main": "index.js",
   "types": "index.d.ts",
