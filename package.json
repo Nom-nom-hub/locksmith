@@ -1,6 +1,6 @@
 {
   "name": "locksmithx",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "The most advanced, feature-rich file locking utility for Node.js with analytics, monitoring, distributed backends, and enterprise features.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -59,11 +59,18 @@
     "signal-exit": "^3.0.2"
   },
   "devDependencies": {
+    "@segment/clear-timeouts": "^2.0.0",
     "@types/node": "^20.0.0",
+    "delay": "^4.4.0",
     "eslint": "^5.3.0",
+    "execa": "^5.1.1",
     "jest": "^29.7.0",
     "jsdoc": "^4.0.0",
-    "nodemon": "^3.0.0"
+    "mkdirp": "^3.0.1",
+    "nodemon": "^3.0.0",
+    "p-defer": "^3.0.0",
+    "rimraf": "^6.0.1",
+    "thread-sleep": "^2.2.0"
   },
   "optionalDependencies": {
     "@azure/storage-blob": "^12.17.0",
