@@ -67,6 +67,12 @@ async function lock(file, options = {}) {
                 
                 await release();
                 
+                // Only untrack if this is not part of an upgrade/downgrade operation
+                // The upgrade/downgrade methods will handle their own tracking
+                if (!options._isUpgradeDowngrade) {
+                    advancedLocks.untrackLock(file, options);
+                }
+                
                 analytics.trackLockReleased(file);
                 await pluginManager.executeHooks('afterRelease', { file, options });
                 
