@@ -49,7 +49,7 @@ Locksmith 5.0.0 includes **24+ advanced features** across multiple categories:
 | ⚡ **Performance Features** | Lock Pooling, Batch Operations, Caching, Smart Retry | 4 |
 | 📊 **Analytics & Monitoring** | Real-time Metrics, Events, Lock Tree, Dashboard | 4 |
 | 🔧 **Developer Experience** | TypeScript, Debug Mode, Lock Visualization, Plugins | 4 |
-| 🔄 **Advanced Operations** | Conditional Locking, Migration, Inheritance, Upgrade/Downgrade | 4 |
+| 🔄 **Advanced Operations** | Conditional Locking, Migration, Inheritance, Lock Upgrade/Downgrade | 4 |
 | 📈 **Real-time Dashboard** | Web Dashboard, Live Metrics, Lock Visualization | 3 |
 | 🔌 **REST API** | Full REST API, Rate Limiting, CORS | 3 |
 | 🔌 **Plugin System** | Custom Backends, Extensible Architecture | 2 |
@@ -482,9 +482,31 @@ await inheritanceLock.release();
 ### 4. Lock Upgrade/Downgrade
 
 ```javascript
-// Upgrade read lock to write lock (future feature)
-// const upgradedLock = await locksmith.upgradeLock(readLock, 'write');
-// await upgradedLock.release();
+// Upgrade read lock to write lock
+const readLock = await locksmith.acquireReadWriteLock('file.txt', { mode: 'read' });
+const writeLock = await locksmith.upgradeToWrite('file.txt');
+await writeLock();
+
+// Downgrade write lock to read lock
+const newReadLock = await locksmith.downgradeToRead('file.txt');
+await newReadLock();
+
+// Upgrade shared lock to exclusive lock
+const sharedLock = await locksmith.lock('file.txt', { mode: 'shared' });
+const exclusiveLock = await locksmith.upgradeToExclusive('file.txt');
+await exclusiveLock();
+
+// Downgrade exclusive lock to shared lock
+const newSharedLock = await locksmith.downgradeToShared('file.txt');
+await newSharedLock();
+
+// Check if upgrade is possible
+const canUpgrade = await locksmith.canUpgrade('file.txt', 'write');
+console.log('Can upgrade to write:', canUpgrade);
+
+// Get tracked locks
+const trackedLocks = locksmith.getTrackedLocks();
+console.log('Active locks:', trackedLocks.length);
 ```
 
 ---
@@ -771,6 +793,54 @@ Acquires a named lock.
 ```javascript
 const release = await locksmith.acquireNamedLock('my-named-lock');
 await release();
+```
+
+#### `upgradeToWrite(file, options?)`
+Upgrades a read lock to a write lock.
+
+```javascript
+const writeLock = await locksmith.upgradeToWrite('file.txt');
+await writeLock();
+```
+
+#### `downgradeToRead(file, options?)`
+Downgrades a write lock to a read lock.
+
+```javascript
+const readLock = await locksmith.downgradeToRead('file.txt');
+await readLock();
+```
+
+#### `upgradeToExclusive(file, options?)`
+Upgrades a shared lock to an exclusive lock.
+
+```javascript
+const exclusiveLock = await locksmith.upgradeToExclusive('file.txt');
+await exclusiveLock();
+```
+
+#### `downgradeToShared(file, options?)`
+Downgrades an exclusive lock to a shared lock.
+
+```javascript
+const sharedLock = await locksmith.downgradeToShared('file.txt');
+await sharedLock();
+```
+
+#### `canUpgrade(file, targetType, options?)`
+Checks if a lock can be upgraded to the target type.
+
+```javascript
+const canUpgrade = await locksmith.canUpgrade('file.txt', 'write');
+console.log('Can upgrade:', canUpgrade);
+```
+
+#### `getTrackedLocks()`
+Returns all currently tracked locks.
+
+```javascript
+const trackedLocks = locksmith.getTrackedLocks();
+console.log('Active locks:', trackedLocks);
 ```
 
 ### Utility Functions

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-
-const locksmith = require('./index');
 const fs = require('fs');
 const path = require('path');
+
+const locksmith = require('./index');
 
 console.log('🔒 Locksmith 5.0.0 - Advanced Features Demo\n');
 
@@ -413,7 +413,7 @@ async function demo() {
     await enterpriseLock();
     console.log('  ✅ Enterprise lock released');
 
-    console.log('\n=== 21. 🧹 Cleanup ===');
+    console.log('\n=== 21. 🧹 Cleanup ===\n');
     
     // Cleanup
     console.log('\n🧹 Cleaning up demo files...');
@@ -459,6 +459,123 @@ async function demo() {
     console.log('  ✅ Use cases demonstrated');
     
     console.log('\n🚀 Locksmith 5.0.0 is ready for production use!');
+
+    console.log('\n🔄 **Lock Upgrade/Downgrade Functionality**');
+    console.log('=====================================');
+
+    // Demonstrate lock upgrade/downgrade
+    async function demonstrateUpgradeDowngrade() {
+        const file = 'upgrade-demo.txt';
+        require('fs').writeFileSync(file, 'Initial content');
+
+        console.log('\n📖 Starting with read lock...');
+        const readLock = await locksmith.acquireReadWriteLock(file, { mode: 'read' });
+        console.log('✅ Read lock acquired');
+
+        console.log('\n⬆️ Upgrading to write lock...');
+        const writeLock = await locksmith.upgradeToWrite(file);
+        console.log('✅ Successfully upgraded to write lock');
+
+        // Modify the file while holding write lock
+        require('fs').writeFileSync(file, 'Modified content');
+        console.log('📝 File modified while holding write lock');
+
+        console.log('\n⬇️ Downgrading back to read lock...');
+        const newReadLock = await locksmith.downgradeToRead(file);
+        console.log('✅ Successfully downgraded to read lock');
+
+        // Read the file while holding read lock
+        const content = require('fs').readFileSync(file, 'utf8');
+        console.log(`📖 File content: ${content}`);
+
+        console.log('\n🔄 Checking upgrade possibilities...');
+        const canUpgrade = await locksmith.canUpgrade(file, 'write');
+        console.log(`Can upgrade to write: ${canUpgrade}`);
+
+        console.log('\n📊 Getting tracked locks...');
+        const trackedLocks = locksmith.getTrackedLocks();
+        console.log(`Active tracked locks: ${trackedLocks.length}`);
+
+        await newReadLock();
+        console.log('🔓 Read lock released');
+
+        // Clean up
+        require('fs').unlinkSync(file);
+    }
+
+    await demonstrateUpgradeDowngrade();
+
+    // Demonstrate shared/exclusive upgrade/downgrade
+    async function demonstrateSharedExclusiveUpgrade() {
+        const file = 'shared-exclusive-demo.txt';
+        require('fs').writeFileSync(file, 'Initial content');
+
+        console.log('\n🤝 Starting with shared lock...');
+        const sharedLock = await locksmith.lock(file, { mode: 'shared' });
+        console.log('✅ Shared lock acquired');
+
+        // Release the shared lock before upgrading
+        await sharedLock();
+
+        // Debug: print lockfile contents or existence
+        const lockfilePath = file + '.lock';
+        const fs = require('fs');
+        if (fs.existsSync(lockfilePath)) {
+            console.log('🔍 Lockfile exists after shared release. Contents:');
+            try {
+                const data = fs.readFileSync(lockfilePath, 'utf8');
+                console.log(data);
+            } catch (e) {
+                console.log('  (Could not read lockfile: ' + e.message + ')');
+            }
+        } else {
+            console.log('✅ Lockfile deleted after shared release.');
+        }
+
+        console.log('\n⬆️ Upgrading to exclusive lock...');
+        const exclusiveLock = await locksmith.upgradeToExclusive(file);
+        console.log('✅ Successfully upgraded to exclusive lock');
+
+        // Modify the file while holding exclusive lock
+        require('fs').writeFileSync(file, 'Exclusive modification');
+        console.log('📝 File modified while holding exclusive lock');
+
+        console.log('\n⬇️ Downgrading back to shared lock...');
+        const newSharedLock = await locksmith.downgradeToShared(file);
+        console.log('✅ Successfully downgraded to shared lock');
+
+        await newSharedLock();
+        console.log('🔓 Shared lock released');
+
+        // Clean up
+        require('fs').unlinkSync(file);
+    }
+
+    await demonstrateSharedExclusiveUpgrade();
+
+    // Cleanup section
+    console.log('\n=== 21. 🧹 Cleanup ===\n');
+
+    function cleanupTxtFiles() {
+        const files = fs.readdirSync('.').filter(f => f.endsWith('.txt'));
+        let deleted = [];
+        for (const file of files) {
+            try {
+                fs.unlinkSync(file);
+                deleted.push(file);
+            } catch (e) {
+                console.error(`Failed to delete ${file}:`, e.message);
+            }
+        }
+        return deleted;
+    }
+
+    const deletedFiles = cleanupTxtFiles();
+    if (deletedFiles.length > 0) {
+        console.log('✅ Demo files cleaned up:', deletedFiles.join(', '));
+    } else {
+        console.log('No demo .txt files found to clean up.');
+    }
 }
 
 // Run the demo

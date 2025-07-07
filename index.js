@@ -13,6 +13,8 @@ const pluginManager = PluginManager;
 pluginManager.registerPlugin('logging', new LoggingPlugin());
 pluginManager.registerPlugin('metrics', new MetricsPlugin());
 
+// Advanced locks module is already imported above
+
 // Enhanced lock function with all advanced features
 async function lock(file, options = {}) {
     const operationId = analytics.startOperation('acquire', file, options);
@@ -37,6 +39,9 @@ async function lock(file, options = {}) {
         } else {
             // Use distributed backend or default file backend
             release = await backendManager.acquire(file, options);
+            // Track shared/exclusive locks for upgrade/downgrade
+            const mode = options.mode || 'exclusive';
+            advancedLocks.trackLock(file, mode, release, options);
         }
         
         // Track lock acquisition
@@ -357,5 +362,13 @@ module.exports = {
     _pluginManager: pluginManager,
     _backendManager: backendManager,
     _advancedLocks: advancedLocks,
-    getLockTree
+    getLockTree,
+    
+    // Export upgrade/downgrade functions
+    upgradeToWrite: (file, options) => advancedLocks.upgradeToWrite(file, options),
+    downgradeToRead: (file, options) => advancedLocks.downgradeToRead(file, options),
+    upgradeToExclusive: (file, options) => advancedLocks.upgradeToExclusive(file, options),
+    downgradeToShared: (file, options) => advancedLocks.downgradeToShared(file, options),
+    canUpgrade: (file, targetType, options) => advancedLocks.canUpgrade(file, targetType, options),
+    getTrackedLocks: () => advancedLocks.getTrackedLocks()
 };

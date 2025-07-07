@@ -336,4 +336,197 @@ describe('Advanced Features', () => {
             assert(plugins, 'Plugin list should be available');
         });
     });
+
+    describe('Lock Upgrade/Downgrade Functionality', () => {
+        it('should upgrade read lock to write lock', async () => {
+            const file = 'upgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire read lock
+            const readLock = await locksmith.acquireReadWriteLock(file, { mode: 'read' });
+            
+            // Upgrade to write lock
+            const writeLock = await locksmith.upgradeToWrite(file);
+            
+            // Verify we have write access
+            assert(writeLock, 'Write lock should be acquired');
+            assert(typeof writeLock === 'function', 'Write lock should be a function');
+            
+            // Release the write lock
+            await writeLock();
+        });
+
+        it('should downgrade write lock to read lock', async () => {
+            const file = 'downgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire write lock
+            const writeLock = await locksmith.acquireReadWriteLock(file, { mode: 'write' });
+            
+            // Downgrade to read lock
+            const readLock = await locksmith.downgradeToRead(file);
+            
+            // Verify we have read access
+            assert(readLock, 'Read lock should be acquired');
+            assert(typeof readLock === 'function', 'Read lock should be a function');
+            
+            // Release the read lock
+            await readLock();
+        });
+
+        it('should upgrade shared lock to exclusive lock', async () => {
+            const file = 'shared-upgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire shared lock
+            const sharedLock = await locksmith.lock(file, { mode: 'shared' });
+            
+            // Upgrade to exclusive lock
+            const exclusiveLock = await locksmith.upgradeToExclusive(file);
+            
+            // Verify we have exclusive access
+            assert(exclusiveLock, 'Exclusive lock should be acquired');
+            assert(typeof exclusiveLock === 'function', 'Exclusive lock should be a function');
+            
+            // Release the exclusive lock
+            await exclusiveLock();
+        });
+
+        it('should downgrade exclusive lock to shared lock', async () => {
+            const file = 'exclusive-downgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire exclusive lock
+            const exclusiveLock = await locksmith.lock(file, { mode: 'exclusive' });
+            
+            // Downgrade to shared lock
+            const sharedLock = await locksmith.downgradeToShared(file);
+            
+            // Verify we have shared access
+            assert(sharedLock, 'Shared lock should be acquired');
+            assert(typeof sharedLock === 'function', 'Shared lock should be a function');
+            
+            // Release the shared lock
+            await sharedLock();
+        });
+
+        it('should prevent upgrade when other locks are active', async () => {
+            const file = 'conflict-upgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire two read locks
+            const readLock1 = await locksmith.acquireReadWriteLock(file, { mode: 'read' });
+            const readLock2 = await locksmith.acquireReadWriteLock(file, { mode: 'read' });
+            
+            // Try to upgrade one to write lock (should fail)
+            let failed = false;
+            try {
+                await locksmith.upgradeToWrite(file);
+                assert.fail('Should not acquire write lock when other read locks are active');
+            } catch (error) {
+                failed = error.message.includes('Write lock acquisition conflict') ||
+                        error.message.includes('Write lock acquisition timeout') ||
+                        error.code === 'ELOCKED' ||
+                        error.code === 'ENOTACQUIRED';
+                assert(failed, 'Should fail when trying to acquire write lock with active read locks');
+            }
+            
+            // Release both locks
+            await readLock1();
+            await readLock2();
+        });
+
+        it('should check if upgrade is possible', async () => {
+            const file = 'can-upgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire read lock
+            const readLock = await locksmith.acquireReadWriteLock(file, { mode: 'read' });
+            
+            // Check if upgrade is possible
+            const canUpgradeToWrite = await locksmith.canUpgrade(file, 'write');
+            assert(canUpgradeToWrite, 'Should be able to upgrade read lock to write lock');
+            
+            // Check if upgrade to exclusive is possible (should be false for read-write locks)
+            const canUpgradeToExclusive = await locksmith.canUpgrade(file, 'exclusive');
+            assert(!canUpgradeToExclusive, 'Should not be able to upgrade read-write lock to exclusive lock');
+            
+            // Release the lock
+            await readLock();
+        });
+
+        it('should get tracked locks', async () => {
+            const file = 'tracked-locks-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire a lock
+            const lock = await locksmith.lock(file);
+            
+            // Get tracked locks
+            const trackedLocks = locksmith.getTrackedLocks();
+            assert(Array.isArray(trackedLocks), 'Tracked locks should be an array');
+            
+            // Release the lock
+            await lock();
+        });
+
+        it('should handle upgrade/downgrade with different backends', async () => {
+            const file = 'backend-upgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire read lock with memory backend
+            const readLock = await locksmith.acquireReadWriteLock(file, { 
+                mode: 'read',
+                backend: 'memory'
+            });
+            
+            // Upgrade to write lock
+            const writeLock = await locksmith.upgradeToWrite(file, { backend: 'memory' });
+            
+            // Verify the upgrade worked
+            assert(writeLock, 'Write lock should be acquired');
+            
+            // Release the write lock
+            await writeLock();
+        });
+
+        it('should maintain lock state during upgrade/downgrade', async () => {
+            const file = 'state-upgrade-test.txt';
+            
+            // Create file first
+            require('fs').writeFileSync(file, 'test content');
+            
+            // Acquire read lock
+            const readLock = await locksmith.acquireReadWriteLock(file, { mode: 'read' });
+            
+            // Upgrade to write lock
+            const writeLock = await locksmith.upgradeToWrite(file);
+            
+            // Downgrade back to read lock
+            const newReadLock = await locksmith.downgradeToRead(file);
+            
+            // Verify the final lock works
+            assert(newReadLock, 'Read lock should be acquired');
+            assert(typeof newReadLock === 'function', 'Read lock should be a function');
+            
+            // Release the final lock
+            await newReadLock();
+        });
+    });
 }); 
